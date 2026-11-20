@@ -1,0 +1,275 @@
+<title>Escabot</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Rubik:wght@400;500;700&display=swap">
+<style>
+/* Layout: comic page — stage panel with Escabot on the left, a sample chat on the right; stacks on phones */
+:root {
+  --bg: #eef0f2; --panel: #ffffff; --ink: #16181c; --muted: #5b6270;
+  --red: #d40000; --yellow: #ffd400; --alu: #c9d0d8; --alu-hi: #f4f6f8; --alu-lo: #8a94a1;
+  --dot: rgba(22,24,28,.07); --user: #dfe6ee;
+  --display: "Bangers", "Impact", system-ui, sans-serif;
+  --body: "Rubik", system-ui, -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #15171b; --panel: #1f2228; --ink: #f1f3f5; --muted: #a2a9b4; --user: #2c323b;
+  --dot: rgba(255,255,255,.05); --alu-lo: #6f7a88; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #15171b; --panel: #1f2228; --ink: #f1f3f5; --muted: #a2a9b4; --user: #2c323b;
+  --dot: rgba(255,255,255,.05); --alu-lo: #6f7a88; color-scheme: dark }
+
+body { background: var(--bg) radial-gradient(var(--dot) 1.5px, transparent 1.6px) 0 0/14px 14px; color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5 }
+.wrap { max-width: 1040px; margin: 0 auto; padding-block: 28px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px }
+header h1 { font-family: var(--display); font-weight: 400; font-size: clamp(42px, 8vw, 68px); letter-spacing: 2px; line-height: 1; margin: 0; color: var(--red); -webkit-text-stroke: 1.5px var(--ink); text-shadow: 3px 3px 0 var(--ink) }
+header p { margin: 8px 0 0; color: var(--muted); max-width: 60ch }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 20px }
+@media (max-width: 760px) { .grid { grid-template-columns: minmax(0, 1fr) } }
+.panel { background: var(--panel); border: 3px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); border-radius: 4px; padding: 18px; min-width: 0 }
+.label { font-family: var(--display); letter-spacing: 1.5px; font-size: 20px; margin: 0 0 10px }
+
+/* ---------- Escabot ---------- */
+.stage { display: grid; place-items: center; height: 300px; position: relative }
+.bot { width: 210px; height: 280px; overflow: visible }
+.bot .rail-o { stroke: var(--ink); stroke-width: 17; stroke-linecap: round }
+.bot .rail { stroke: url(#alu); stroke-width: 11; stroke-linecap: round }
+.bot .rung-o { stroke: var(--ink); stroke-width: 13; stroke-linecap: round }
+.bot .rung { stroke: var(--alu); stroke-width: 7; stroke-linecap: round }
+.bot .ink { fill: var(--ink) }
+.bot .eye-w { fill: #fff; stroke: var(--ink); stroke-width: 3 }
+.bot .mouth { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round }
+.bot .mouth.fill { fill: var(--ink) }
+.bot .brow { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; opacity: 0 }
+.bot .m, .bot .sweat, .bot .think { opacity: 0 }
+.bot [class*="m-"] { transition: opacity .15s }
+.body-g, .eyes, .pupils, .cap, .brow { transform-box: fill-box; transform-origin: center }
+.body-g { transform-origin: 50% 100% }
+.pupils { transition: transform .25s }
+
+/* state: neutral */
+[data-state="neutral"] .m-neutral, [data-state="neutral"] .m-neutral { opacity: 1 }
+[data-state="neutral"] .body-g { animation: bob 2.4s ease-in-out infinite }
+.eyes { animation: blink 4.2s infinite }
+
+/* state: thinking */
+[data-state="thinking"] .m-thinking, [data-state="thinking"] .think, [data-state="thinking"] .brow-l { opacity: 1 }
+[data-state="thinking"] .pupils { transform: translate(4px, -5px) }
+[data-state="thinking"] .body-g { animation: bob 1.6s ease-in-out infinite }
+[data-state="thinking"] .rung { animation: load 1.6s infinite }
+[data-state="thinking"] .rung:nth-of-type(4) { animation-delay: 0s }
+[data-state="thinking"] .r4 { animation-delay: 0s } [data-state="thinking"] .r3 { animation-delay: .25s }
+[data-state="thinking"] .r2 { animation-delay: .5s } [data-state="thinking"] .r1 { animation-delay: .75s }
+[data-state="thinking"] .think circle { animation: pop 1.2s infinite }
+[data-state="thinking"] .think circle:nth-child(2) { animation-delay: .2s }
+[data-state="thinking"] .think circle:nth-child(3) { animation-delay: .4s }
+
+/* state: happy */
+[data-state="happy"] .m-happy { opacity: 1 }
+[data-state="happy"] .body-g { animation: hop .9s cubic-bezier(.3,.7,.4,1) infinite }
+[data-state="happy"] .cap { animation: tip .9s ease-in-out infinite }
+[data-state="happy"] .eyes { transform: scaleY(.55) }
+
+/* state: surprised */
+[data-state="surprised"] .m-surprised { opacity: 1 }
+[data-state="surprised"] .eyes { animation: none; transform: scale(1.18) }
+[data-state="surprised"] .cap { animation: capPop 1.4s ease-out infinite }
+[data-state="surprised"] .body-g { animation: jolt 1.4s ease-out infinite }
+[data-state="surprised"] .brow-l, [data-state="surprised"] .brow-r { opacity: 1; transform: translateY(-5px) }
+
+/* state: offtopic */
+[data-state="offtopic"] .m-offtopic, [data-state="offtopic"] .sweat, [data-state="offtopic"] .brow-l, [data-state="offtopic"] .brow-r { opacity: 1 }
+[data-state="offtopic"] .brow-l { transform: rotate(14deg) } [data-state="offtopic"] .brow-r { transform: rotate(-14deg) }
+[data-state="offtopic"] .body-g { animation: nope 1.3s ease-in-out infinite }
+[data-state="offtopic"] .sweat { animation: drip 1.3s ease-in infinite }
+
+/* state: error (flat tyre) */
+[data-state="error"] .m-error, [data-state="error"] .brow-l, [data-state="error"] .brow-r { opacity: 1 }
+[data-state="error"] .brow-l { transform: rotate(-16deg) } [data-state="error"] .brow-r { transform: rotate(16deg) }
+[data-state="error"] .pupils { transform: translateY(5px) }
+[data-state="error"] .body-g { animation: slump 2.6s ease-in-out infinite }
+[data-state="error"] .cap { transform: rotate(-12deg) translate(-4px, 4px) }
+
+@keyframes bob { 50% { transform: translateY(-5px) } }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1) } 95% { transform: scaleY(.1) } }
+@keyframes load { 0%, 100% { stroke: var(--alu) } 30% { stroke: var(--yellow) } }
+@keyframes pop { 0%, 100% { opacity: .25 } 50% { opacity: 1 } }
+@keyframes hop { 0%, 100% { transform: translateY(0) scale(1.04, .96) } 40% { transform: translateY(-20px) scale(.97, 1.03) } 70% { transform: translateY(0) scale(1.05, .95) } }
+@keyframes tip { 50% { transform: rotate(-8deg) translateY(-3px) } }
+@keyframes capPop { 0% { transform: none } 15% { transform: translateY(-26px) rotate(10deg) } 45%, 100% { transform: none } }
+@keyframes jolt { 0% { transform: none } 12% { transform: translateY(-8px) scale(1.02) } 30%, 100% { transform: none } }
+@keyframes nope { 0%, 60%, 100% { transform: rotate(0) } 10%, 30% { transform: rotate(-5deg) } 20%, 40% { transform: rotate(5deg) } }
+@keyframes drip { 0% { transform: translateY(0); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(18px); opacity: 0 } }
+@keyframes slump { 50% { transform: scaleY(.96) rotate(-2deg) } }
+
+.states { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px }
+.states button, .demo { font: 500 14px var(--body); color: var(--ink); background: var(--panel); border: 2px solid var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; box-shadow: 2px 2px 0 var(--ink) }
+.states button[aria-pressed="true"] { background: var(--yellow); color: #16181c }
+.states button:focus-visible, .demo:focus-visible { outline: 3px solid var(--red); outline-offset: 2px }
+.demo { background: var(--red); color: #fff; font-family: var(--display); letter-spacing: 1px; font-size: 18px }
+.desc { color: var(--muted); font-size: 14px; min-height: 3em; margin: 10px 0 0 }
+
+/* ---------- chat ---------- */
+.chat { display: grid; gap: 14px }
+.msg-user { justify-self: end; background: var(--user); border-radius: 14px 14px 2px 14px; padding: 8px 14px; max-width: 80% }
+.row { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 12px; align-items: start }
+.row svg { width: 56px; height: 74px }
+.bubble { position: relative; background: var(--panel); border: 3px solid var(--ink); border-radius: 18px; padding: 12px 14px; min-width: 0 }
+.bubble::before { content: ""; position: absolute; left: -15px; top: 18px; border: 9px solid transparent; border-right: 13px solid var(--ink) }
+.bubble::after { content: ""; position: absolute; left: -9px; top: 21px; border: 6px solid transparent; border-right: 9px solid var(--panel) }
+.bubble p { margin: 0 0 8px }
+.tbl { overflow-x: auto }
+table { border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; width: 100% }
+th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--alu-lo) }
+th { font-weight: 700 }
+.facts { margin-top: 10px; background: var(--yellow); color: #16181c; border: 2px solid var(--ink); border-radius: 6px; padding: 8px 10px; transform: rotate(-.6deg) }
+.facts b { font-family: var(--display); font-weight: 400; letter-spacing: 1px; font-size: 18px }
+details { margin-top: 10px; font-size: 13px; color: var(--muted) }
+summary { cursor: pointer }
+code { display: block; white-space: pre-wrap; font-size: 12px; background: var(--bg); padding: 8px; border-radius: 4px; margin-top: 6px; color: var(--ink) }
+.typing { display: none; gap: 5px; padding: 6px 0 }
+.typing span { width: 8px; height: 8px; border-radius: 50%; background: var(--ink); animation: pop 1s infinite }
+.typing span:nth-child(2) { animation-delay: .15s } .typing span:nth-child(3) { animation-delay: .3s }
+.chat.loading .typing { display: flex } .chat.loading .answer { display: none }
+.tag { font-size: 12px; color: var(--muted) }
+footer { font-size: 13px; color: var(--muted); text-align: center }
+
+@media (prefers-reduced-motion: reduce) { .bot *, .bot, .typing span { animation: none !important; transition: none !important } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>ESCABOT</h1>
+    <p>Boceto del avatar: una escalera de aluminio con ojos y gorra roja. Cada estado es el mismo SVG con otra cara y otra animación en CSS, sin imágenes.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="t-states">
+      <h2 class="label" id="t-states">Estados</h2>
+      <div class="stage">
+        <svg class="bot" id="bot" data-state="neutral" viewBox="0 -20 200 290" role="img" aria-label="Escabot, escalera de aluminio con gorra roja">
+          <defs>
+            <linearGradient id="alu" x1="0" x2="1">
+              <stop offset="0" stop-color="#8a94a1"/><stop offset=".45" stop-color="#f4f6f8"/><stop offset="1" stop-color="#aab3be"/>
+            </linearGradient>
+          </defs>
+          <g class="body-g">
+            <!-- rails -->
+            <line class="rail-o" x1="72" y1="52" x2="48" y2="252"/><line class="rail-o" x1="128" y1="52" x2="152" y2="252"/>
+            <line class="rail" x1="72" y1="52" x2="48" y2="252"/><line class="rail" x1="128" y1="52" x2="152" y2="252"/>
+            <!-- rungs (top to bottom r1..r4) -->
+            <line class="rung-o" x1="61" y1="142" x2="139" y2="142"/><line class="rung r1" x1="61" y1="142" x2="139" y2="142"/>
+            <line class="rung-o" x1="57" y1="176" x2="143" y2="176"/><line class="rung r2" x1="57" y1="176" x2="143" y2="176"/>
+            <line class="rung-o" x1="53" y1="210" x2="147" y2="210"/><line class="rung r3" x1="53" y1="210" x2="147" y2="210"/>
+            <line class="rung-o" x1="49" y1="244" x2="151" y2="244"/><line class="rung r4" x1="49" y1="244" x2="151" y2="244"/>
+            <!-- rubber feet -->
+            <rect class="ink" x="36" y="250" width="24" height="10" rx="3"/><rect class="ink" x="140" y="250" width="24" height="10" rx="3"/>
+            <!-- top platform = head -->
+            <rect x="60" y="42" width="80" height="20" rx="6" fill="url(#alu)" stroke="var(--ink)" stroke-width="3"/>
+            <!-- face -->
+            <line class="brow brow-l" x1="76" y1="68" x2="94" y2="66"/><line class="brow brow-r" x1="106" y1="66" x2="124" y2="68"/>
+            <g class="eyes">
+              <ellipse class="eye-w" cx="86" cy="90" rx="12" ry="14"/><ellipse class="eye-w" cx="114" cy="90" rx="12" ry="14"/>
+              <g class="pupils"><circle fill="#16181c" cx="88" cy="92" r="5.5"/><circle fill="#16181c" cx="112" cy="92" r="5.5"/>
+                <circle cx="90" cy="89.5" r="1.8" fill="#fff"/><circle cx="114" cy="89.5" r="1.8" fill="#fff"/></g>
+            </g>
+            <path class="m mouth m-neutral" d="M90 116 Q100 123 110 116"/>
+            <path class="m mouth m-thinking" d="M92 119 L108 116"/>
+            <path class="m mouth fill m-happy" d="M84 113 Q100 134 116 113 Z"/>
+            <ellipse class="m mouth m-surprised" cx="100" cy="120" rx="6" ry="8"/>
+            <path class="m mouth m-offtopic" d="M86 120 q4 -5 7 0 t7 0 t7 0 t7 0"/>
+            <path class="m mouth m-error" d="M89 123 Q100 113 111 123"/>
+            <path class="sweat" d="M132 72 q6 9 0 13 q-6 -4 0 -13 Z" fill="#7cc4ff" stroke="var(--ink)" stroke-width="2"/>
+            <!-- cap -->
+            <g class="cap">
+              <path d="M56 46 Q60 4 100 2 Q140 4 144 46 Z" fill="var(--red)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+              <path d="M138 42 Q168 36 182 48 Q160 54 136 50 Z" fill="var(--red)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+              <circle cx="100" cy="4" r="4" fill="var(--red)" stroke="var(--ink)" stroke-width="2.5"/>
+              <rect x="88" y="16" width="24" height="20" rx="3" fill="var(--yellow)" stroke="var(--ink)" stroke-width="2.5"/>
+              <text x="100" y="32" text-anchor="middle" font-family="Bangers, Impact, sans-serif" font-size="17" fill="#16181c">E</text>
+            </g>
+          </g>
+          <g class="think" fill="var(--ink)"><circle cx="160" cy="20" r="4"/><circle cx="172" cy="6" r="5"/><circle cx="186" cy="-10" r="6"/></g>
+        </svg>
+      </div>
+      <div class="states" role="group" aria-label="Elegir estado">
+        <button data-s="neutral" aria-pressed="true">Neutral</button>
+        <button data-s="thinking" aria-pressed="false">Pensando</button>
+        <button data-s="happy" aria-pressed="false">Feliz</button>
+        <button data-s="surprised" aria-pressed="false">Sorprendido</button>
+        <button data-s="offtopic" aria-pressed="false">Fuera de tema</button>
+        <button data-s="error" aria-pressed="false">Error</button>
+      </div>
+      <p class="desc" id="desc" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="t-chat">
+      <h2 class="label" id="t-chat">Así se vería en el chat <span class="tag">(respuesta de ejemplo)</span></h2>
+      <div class="chat" id="chat">
+        <div class="msg-user">¿Cuántas victorias tiene Checo en F1?</div>
+        <div class="row">
+          <svg viewBox="0 -20 200 290" aria-hidden="true"><use href="#mini"/></svg>
+          <div class="bubble">
+            <div class="typing" aria-label="Escabot está consultando"><span></span><span></span><span></span></div>
+            <div class="answer">
+              <p>¡Seis, compadre! Checo ganó 6 Grandes Premios:</p>
+              <div class="tbl"><table>
+                <thead><tr><th>Año</th><th>Gran Premio</th><th>Equipo</th></tr></thead>
+                <tbody>
+                  <tr><td>2020</td><td>Sakhir</td><td>Racing Point</td></tr>
+                  <tr><td>2021</td><td>Azerbaiyán</td><td>Red Bull</td></tr>
+                  <tr><td>2022</td><td>Mónaco</td><td>Red Bull</td></tr>
+                  <tr><td>2022</td><td>Singapur</td><td>Red Bull</td></tr>
+                  <tr><td>2023</td><td>Arabia Saudita</td><td>Red Bull</td></tr>
+                  <tr><td>2023</td><td>Azerbaiyán</td><td>Red Bull</td></tr>
+                </tbody>
+              </table></div>
+              <div class="facts"><b>🪜 ALEX FACTS:</b> Antes de Checo, el mexicano con más victorias era Pedro Rodríguez, con 2 (Sudáfrica 1967 y Bélgica 1970).</div>
+              <details><summary>¿Cómo lo calculé?</summary>
+                <code>SELECT season, race_name, team FROM results
+WHERE driver_ref = 'perez' AND position = 1
+ORDER BY date;</code></details>
+            </div>
+          </div>
+        </div>
+        <button class="demo" id="demo" type="button">Repetir la respuesta</button>
+      </div>
+    </section>
+  </div>
+
+  <footer>Datos: Jolpica-F1 (CC BY-NC-SA 4.0) · Homenaje de fans, no oficial ni afiliado a Alex Escalera</footer>
+</div>
+
+<script>
+// Mini avatar for the chat row: clone the big one so both share one drawing.
+(function () {
+  const bot = document.getElementById('bot');
+  const mini = bot.cloneNode(true);
+  mini.removeAttribute('id'); mini.setAttribute('aria-hidden', 'true');
+  mini.querySelector('defs')?.remove();
+  const holder = document.querySelector('.row svg');
+  holder.replaceWith(mini);
+  mini.classList.add('bot'); mini.style.width = '56px'; mini.style.height = '74px';
+  mini.dataset.state = 'happy';
+
+  const desc = {
+    neutral: 'En reposo: se mece un poco y parpadea. Es el estado mientras esperas.',
+    thinking: 'Mientras corre la consulta SQL: mira hacia arriba, salen burbujas y los peldaños se iluminan de abajo hacia arriba, como barra de carga.',
+    happy: 'Respuesta lista: brinca, entrecierra los ojos de gusto y se le mueve la gorra.',
+    surprised: 'Cuando el dato es un récord: se le levanta la gorra y abre los ojos.',
+    offtopic: 'Pregunta que no es de F1: niega con todo el cuerpo, suda, y aun así suelta un Alex fact.',
+    error: 'Falla DeepSeek o se acaba el límite: “Se me ponchó una llanta, intenta en un rato”.'
+  };
+  const btns = document.querySelectorAll('.states button');
+  function set(s) {
+    bot.dataset.state = s;
+    btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === s)));
+    document.getElementById('desc').textContent = desc[s];
+  }
+  btns.forEach(b => b.addEventListener('click', () => set(b.dataset.s)));
+  set('neutral');
+
+  const chat = document.getElementById('chat');
+  document.getElementById('demo').addEventListener('click', () => {
+    chat.classList.add('loading'); mini.dataset.state = 'thinking';
+    setTimeout(() => { chat.classList.remove('loading'); mini.dataset.state = 'happy'; }, 2200);
+  });
+})();
+</script>

@@ -1,0 +1,165 @@
+:root {
+  --bg: #eef0f2; --panel: #ffffff; --ink: #16181c; --muted: #5b6270; --user: #dfe6ee;
+  --red: #d40000; --yellow: #ffd400; --alu: #c9d0d8; --alu-lo: #8a94a1;
+  --dot: rgba(22, 24, 28, .07);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15171b; --panel: #1f2228; --ink: #f1f3f5; --muted: #a2a9b4; --user: #2c323b;
+    --dot: rgba(255, 255, 255, .05); --alu-lo: #6f7a88; color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box }
+html, body { margin: 0 }
+body {
+  background: var(--bg) radial-gradient(var(--dot) 1.5px, transparent 1.6px) 0 0 / 14px 14px;
+  color: var(--ink); font-family: var(--body), system-ui, sans-serif; font-size: 15px; line-height: 1.5;
+}
+a { color: inherit }
+button { font: inherit; color: inherit; cursor: pointer }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--red); outline-offset: 2px }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+
+.app {
+  max-width: 760px; min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column;
+  padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right));
+}
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 16px 8px }
+.top h1 {
+  font-family: var(--display), Impact, sans-serif; font-weight: 400; font-size: 44px; letter-spacing: 2px; line-height: 1;
+  margin: 0; color: var(--red); -webkit-text-stroke: 1.2px var(--ink); text-shadow: 2px 2px 0 var(--ink);
+}
+.ghost {
+  background: var(--panel); border: 2px solid var(--ink); border-radius: 999px; padding: 4px 12px;
+  box-shadow: 2px 2px 0 var(--ink); font-size: 14px;
+}
+
+.chat { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-block: 12px 24px }
+.welcome { display: grid; justify-items: center; text-align: center; gap: 12px; padding-top: 12px }
+.hello { max-width: 42ch; margin: 0; font-size: 17px }
+.examples { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px }
+.examples button {
+  background: var(--panel); border: 2px solid var(--ink); border-radius: 14px; padding: 6px 12px;
+  box-shadow: 3px 3px 0 var(--ink); text-align: left;
+}
+.examples button:hover { background: var(--yellow); color: #16181c }
+
+.msg-user {
+  align-self: flex-end; background: var(--user); border-radius: 14px 14px 2px 14px; padding: 8px 14px;
+  max-width: 80%; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: start }
+.bubble {
+  position: relative; background: var(--panel); border: 3px solid var(--ink); border-radius: 18px;
+  padding: 10px 14px; min-width: 0; overflow-wrap: anywhere;
+}
+.bubble::before { content: ""; position: absolute; left: -15px; top: 18px; border: 9px solid transparent; border-right: 13px solid var(--ink) }
+.bubble::after { content: ""; position: absolute; left: -9px; top: 21px; border: 6px solid transparent; border-right: 9px solid var(--panel) }
+.bubble p { margin: 0 0 8px }
+.bubble p:last-child { margin-bottom: 0 }
+.muted { color: var(--muted) }
+.tbl { overflow-x: auto; margin: 4px 0 10px }
+.bubble table { border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; width: 100% }
+.bubble th, .bubble td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--alu-lo) }
+.facts {
+  background: var(--yellow); color: #16181c; border: 2px solid var(--ink); border-radius: 6px;
+  padding: 8px 10px; transform: rotate(-.6deg); margin-top: 10px !important;
+}
+.bubble details { margin-top: 10px; font-size: 13px; color: var(--muted) }
+.bubble summary { cursor: pointer }
+.bubble code {
+  display: block; white-space: pre-wrap; font-size: 12px; background: var(--bg); padding: 8px;
+  border-radius: 4px; margin-top: 6px; color: var(--ink);
+}
+
+.composer {
+  position: sticky; bottom: 0; display: flex; gap: 8px; background: var(--bg);
+  padding-block: 10px calc(10px + env(safe-area-inset-bottom));
+}
+.composer input {
+  flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--ink); background: var(--panel);
+  border: 3px solid var(--ink); border-radius: 14px; padding: 10px 14px;
+}
+.composer button {
+  font-family: var(--display), Impact, sans-serif; font-size: 20px; letter-spacing: 1px; color: #fff;
+  background: var(--red); border: 3px solid var(--ink); border-radius: 14px; padding: 0 16px; box-shadow: 3px 3px 0 var(--ink);
+}
+.composer button:disabled { opacity: .5; cursor: default }
+footer { font-size: 12.5px; color: var(--muted); text-align: center; padding-block: 4px 16px }
+
+/* ---------- Escabot ---------- */
+.bot { overflow: visible }
+.bot.hero { width: 150px; height: 200px }
+.bot.mini { width: 52px; height: 70px }
+.bot .rail-o { stroke: var(--ink); stroke-width: 17; stroke-linecap: round }
+.bot .rail { stroke-width: 11; stroke-linecap: round }
+.bot .rung-o { stroke: var(--ink); stroke-width: 13; stroke-linecap: round }
+.bot .rung { stroke: var(--alu); stroke-width: 7; stroke-linecap: round }
+.bot .ink { fill: var(--ink) }
+.bot .eye-w { fill: #fff; stroke: var(--ink); stroke-width: 3 }
+.bot .mouth { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round }
+.bot .mouth.fill { fill: var(--ink) }
+.bot .brow { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; opacity: 0 }
+.bot .m, .bot .sweat, .bot .think { opacity: 0 }
+.bot .m { transition: opacity .15s }
+.body-g, .eyes, .pupils, .cap, .brow { transform-box: fill-box; transform-origin: center }
+.body-g { transform-origin: 50% 100% }
+.pupils { transition: transform .25s }
+.eyes { animation: blink 4.2s infinite }
+
+[data-state="neutral"] .m-neutral { opacity: 1 }
+[data-state="neutral"] .body-g { animation: bob 2.4s ease-in-out infinite }
+
+[data-state="thinking"] .m-thinking, [data-state="thinking"] .think, [data-state="thinking"] .brow-l { opacity: 1 }
+[data-state="thinking"] .pupils { transform: translate(4px, -5px) }
+[data-state="thinking"] .body-g { animation: bob 1.6s ease-in-out infinite }
+[data-state="thinking"] .rung { animation: load 1.6s infinite }
+[data-state="thinking"] .r3 { animation-delay: .25s }
+[data-state="thinking"] .r2 { animation-delay: .5s }
+[data-state="thinking"] .r1 { animation-delay: .75s }
+[data-state="thinking"] .think circle { animation: pop 1.2s infinite }
+[data-state="thinking"] .think circle:nth-child(2) { animation-delay: .2s }
+[data-state="thinking"] .think circle:nth-child(3) { animation-delay: .4s }
+
+[data-state="happy"] .m-happy { opacity: 1 }
+[data-state="happy"] .body-g { animation: hop .9s cubic-bezier(.3, .7, .4, 1) 3 }
+[data-state="happy"] .cap { animation: tip .9s ease-in-out 3 }
+[data-state="happy"] .eyes { transform: scaleY(.55) }
+
+[data-state="surprised"] .m-surprised { opacity: 1 }
+[data-state="surprised"] .eyes { animation: none; transform: scale(1.18) }
+[data-state="surprised"] .cap { animation: capPop 1.4s ease-out 2 }
+[data-state="surprised"] .body-g { animation: jolt 1.4s ease-out 2 }
+[data-state="surprised"] .brow-l, [data-state="surprised"] .brow-r { opacity: 1; transform: translateY(-5px) }
+
+[data-state="offtopic"] .m-offtopic, [data-state="offtopic"] .sweat,
+[data-state="offtopic"] .brow-l, [data-state="offtopic"] .brow-r { opacity: 1 }
+[data-state="offtopic"] .brow-l { transform: rotate(14deg) }
+[data-state="offtopic"] .brow-r { transform: rotate(-14deg) }
+[data-state="offtopic"] .body-g { animation: nope 1.3s ease-in-out 2 }
+[data-state="offtopic"] .sweat { animation: drip 1.3s ease-in infinite }
+
+[data-state="error"] .m-error, [data-state="error"] .brow-l, [data-state="error"] .brow-r { opacity: 1 }
+[data-state="error"] .brow-l { transform: rotate(-16deg) }
+[data-state="error"] .brow-r { transform: rotate(16deg) }
+[data-state="error"] .pupils { transform: translateY(5px) }
+[data-state="error"] .body-g { animation: slump 2.6s ease-in-out infinite }
+[data-state="error"] .cap { transform: rotate(-12deg) translate(-4px, 4px) }
+
+@keyframes bob { 50% { transform: translateY(-5px) } }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1) } 95% { transform: scaleY(.1) } }
+@keyframes load { 0%, 100% { stroke: var(--alu) } 30% { stroke: var(--yellow) } }
+@keyframes pop { 0%, 100% { opacity: .25 } 50% { opacity: 1 } }
+@keyframes hop { 0%, 100% { transform: translateY(0) scale(1.04, .96) } 40% { transform: translateY(-20px) scale(.97, 1.03) } 70% { transform: translateY(0) scale(1.05, .95) } }
+@keyframes tip { 50% { transform: rotate(-8deg) translateY(-3px) } }
+@keyframes capPop { 0% { transform: none } 15% { transform: translateY(-26px) rotate(10deg) } 45%, 100% { transform: none } }
+@keyframes jolt { 0% { transform: none } 12% { transform: translateY(-8px) scale(1.02) } 30%, 100% { transform: none } }
+@keyframes nope { 0%, 60%, 100% { transform: rotate(0) } 10%, 30% { transform: rotate(-5deg) } 20%, 40% { transform: rotate(5deg) } }
+@keyframes drip { 0% { transform: translateY(0); opacity: 0 } 20% { opacity: 1 } 100% { transform: translateY(18px); opacity: 0 } }
+@keyframes slump { 50% { transform: scaleY(.96) rotate(-2deg) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bot, .bot * { animation: none !important; transition: none !important }
+}
