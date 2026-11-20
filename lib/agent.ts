@@ -62,4 +62,6 @@ export const agentOptions = (messages: ModelMessage[]) => ({
   messages,
   tools,
   stopWhen: isStepCount(6),
+  // A normal answer with a table is ~600 tokens; this stops prompt-injected essays.
+  maxOutputTokens: 1500,
 });

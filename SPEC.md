@@ -55,7 +55,9 @@ Avatar mockup: [`docs/escabot-mockup.html`](docs/escabot-mockup.html).
 
 ## Abuse & cost
 
-- Rate limit: 20 messages / IP / hour (Upstash Redis free tier).
+- Rate limit: 20 messages / IP / hour, plus 200 messages / day for the whole site (Upstash Redis free tier, `lib/ratelimit.ts`). Production refuses all requests if Redis isn't configured.
+- `maxOutputTokens: 1500` per step.
+- Gemini free tier tested 2026-11-19 and rejected: 5 requests/minute per model, about 1–2 questions/minute for the whole site.
 - DeepSeek: prepaid credit only, no auto-recharge.
 - No server-side logging of questions beyond Vercel defaults.
 
