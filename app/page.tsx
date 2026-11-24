@@ -5,6 +5,7 @@ import type { UIMessage } from 'ai';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { fromMoodTag } from '../lib/mood.ts';
 import { Escabot, type Mood } from './Escabot';
 
 const STORAGE_KEY = 'escabot-chat';
@@ -47,20 +48,14 @@ const markdown = {
   ),
 };
 
-function BotRow({ mood, children }: { mood: Mood; children: ReactNode }) {
-  return (
-    <div className="row">
-      <Escabot mood={mood} className="mini" />
-      <div className="bubble">{children}</div>
-    </div>
-  );
-}
+const Bubble = ({ children }: { children: ReactNode }) => <div className="bubble">{children}</div>;
 
 export default function Chat() {
   const { messages, sendMessage, status, error, setMessages, regenerate, stop } = useChat();
   const [input, setInput] = useState('');
   const loaded = useRef(false);
   const end = useRef<HTMLDivElement>(null);
+  const info = useRef<HTMLDialogElement>(null);
   const busy = status === 'submitted' || status === 'streaming';
 
   // Chat lives only in this browser.
@@ -97,17 +92,48 @@ export default function Chat() {
 
   const last = messages.at(-1);
   const waiting = busy && last?.role === 'user';
+  const lastText = last?.role === 'assistant' ? fromMoodTag(textOf(last)) : '';
+  // Escabot's mood follows the latest exchange.
+  const mood: Mood = error ? 'error' : busy && !lastText ? 'thinking' : moodOf(lastText);
 
   return (
     <div className="app">
       <header className="top">
         <h1>ESCABOT</h1>
-        {messages.length > 0 && (
-          <button type="button" className="ghost" onClick={reset}>
-            Nueva conversación
+        <div className="actions">
+          <button type="button" className="ghost icon" aria-label="Acerca de Escabot" onClick={() => info.current?.showModal()}>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2" />
+              <path d="M12 11v6M12 7.5v.5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+            </svg>
           </button>
-        )}
+          {messages.length > 0 && (
+            <button type="button" className="ghost" onClick={reset}>
+              Nueva conversación
+            </button>
+          )}
+        </div>
       </header>
+
+      <dialog
+        ref={info}
+        className="info"
+        aria-labelledby="info-title"
+        onClick={(e) => e.target === info.current && info.current.close()}
+      >
+        <h2 id="info-title">Acerca de Escabot</h2>
+        <p>
+          Homenaje de fans, no oficial ni afiliado a{' '}
+          <a href="https://www.tiktok.com/@escaleraf1" target="_blank" rel="noreferrer">Alex Escalera</a>.
+        </p>
+        <p>
+          Datos: <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noreferrer">Jolpica-F1</a>{' '}
+          (CC BY-NC-SA 4.0), temporadas 1950 a 2025.
+        </p>
+        <form method="dialog">
+          <button className="ghost">Cerrar</button>
+        </form>
+      </dialog>
 
       <main className="chat" aria-live="polite">
         {messages.length === 0 && (
@@ -134,11 +160,11 @@ export default function Chat() {
               </div>
             );
           }
-          const text = textOf(m);
+          const text = fromMoodTag(textOf(m));
           const live = m === last && busy;
           const queries = queriesOf(m);
           return (
-            <BotRow key={m.id} mood={live && !text ? 'thinking' : moodOf(text)}>
+            <Bubble key={m.id}>
               {text ? (
                 <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdown}>
                   {text.replace(MOOD_TAG, '')}
@@ -154,23 +180,23 @@ export default function Chat() {
                   ))}
                 </details>
               )}
-            </BotRow>
+            </Bubble>
           );
         })}
 
         {waiting && (
-          <BotRow mood="thinking">
+          <Bubble>
             <p className="muted">Déjame subirme a revisar…</p>
-          </BotRow>
+          </Bubble>
         )}
 
         {error && (
-          <BotRow mood="error">
+          <Bubble>
             <p>No se me abrió el DRS, intenta en un rato.</p>
             <button type="button" className="ghost" onClick={() => regenerate()}>
               Reintentar
             </button>
-          </BotRow>
+          </Bubble>
         )}
         <div ref={end} />
       </main>
@@ -182,6 +208,13 @@ export default function Chat() {
           ask(input);
         }}
       >
+        {/* Docked above the input; the chat scrolls behind him through a frosted patch. */}
+        {messages.length > 0 && (
+          <div className="dock" aria-hidden="true">
+            <Escabot mood={mood} />
+            <div className="shadow" />
+          </div>
+        )}
         <label htmlFor="q" className="sr-only">
           Tu pregunta
         </label>
@@ -197,11 +230,6 @@ export default function Chat() {
           Enviar
         </button>
       </form>
-
-      <footer>
-        Datos: <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noreferrer">Jolpica-F1</a> (CC BY-NC-SA 4.0) · Homenaje de fans, no oficial ni afiliado a{' '}
-        <a href="https://www.tiktok.com/@escaleraf1" target="_blank" rel="noreferrer">Alex Escalera</a>
-      </footer>
     </div>
   );
 }

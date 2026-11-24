@@ -1,13 +1,13 @@
 :root {
   --bg: #eef0f2; --panel: #ffffff; --ink: #16181c; --muted: #5b6270; --user: #dfe6ee;
   --red: #d40000; --yellow: #ffd400; --alu: #c9d0d8; --alu-lo: #8a94a1;
-  --dot: rgba(22, 24, 28, .07);
+  --dot: rgba(22, 24, 28, .07); --soft: rgba(22, 24, 28, .14);
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #15171b; --panel: #1f2228; --ink: #f1f3f5; --muted: #a2a9b4; --user: #2c323b;
-    --dot: rgba(255, 255, 255, .05); --alu-lo: #6f7a88; color-scheme: dark;
+    --dot: rgba(255, 255, 255, .05); --alu-lo: #6f7a88; --soft: rgba(0, 0, 0, .45); color-scheme: dark;
   }
 }
 
@@ -36,7 +36,8 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px 
   box-shadow: 2px 2px 0 var(--ink); font-size: 14px;
 }
 
-.chat { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-block: 12px 24px }
+/* Bottom room so the last answer can scroll up past Escabot. */
+.chat { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-block: 12px 180px }
 .welcome { display: grid; justify-items: center; text-align: center; gap: 12px; padding-top: 12px }
 .hello { max-width: 42ch; margin: 0; font-size: 17px }
 .examples { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px }
@@ -50,13 +51,31 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px 
   align-self: flex-end; background: var(--user); border-radius: 14px 14px 2px 14px; padding: 8px 14px;
   max-width: 80%; white-space: pre-wrap; overflow-wrap: anywhere;
 }
-.row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; align-items: start }
 .bubble {
   position: relative; background: var(--panel); border: 3px solid var(--ink); border-radius: 18px;
   padding: 10px 14px; min-width: 0; overflow-wrap: anywhere;
 }
-.bubble::before { content: ""; position: absolute; left: -15px; top: 18px; border: 9px solid transparent; border-right: 13px solid var(--ink) }
-.bubble::after { content: ""; position: absolute; left: -9px; top: 21px; border: 6px solid transparent; border-right: 9px solid var(--panel) }
+
+/* Escabot docked above the input. The chat scrolls behind him through a frosted patch. */
+.dock {
+  --bot-w: 100px; --bot-h: 136px;
+  position: absolute; right: 4px; bottom: 100%; z-index: 2; pointer-events: none;
+  display: grid; justify-items: center;
+}
+@media (min-width: 700px) { .dock { --bot-w: 124px; --bot-h: 168px } }
+.dock::before {
+  content: ""; position: absolute; inset: -10px -12px 0; z-index: -1; border-radius: 50%;
+  background: color-mix(in srgb, var(--bg) 35%, transparent);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent);
+  mask-image: radial-gradient(closest-side, #000 55%, transparent);
+}
+.dock .bot { width: var(--bot-w); height: var(--bot-h); filter: drop-shadow(0 2px 5px var(--soft)) }
+.dock .shadow {
+  width: 50%; height: 7px; border-radius: 50%; background: var(--soft);
+  animation: shadow 2.4s ease-in-out infinite;
+}
+@keyframes shadow { 50% { transform: scaleX(.78); opacity: .6 } }
 .bubble p { margin: 0 0 8px }
 .bubble p:last-child { margin-bottom: 0 }
 .muted { color: var(--muted) }
@@ -87,12 +106,20 @@ button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px 
   background: var(--red); border: 3px solid var(--ink); border-radius: 14px; padding: 0 16px; box-shadow: 3px 3px 0 var(--ink);
 }
 .composer button:disabled { opacity: .5; cursor: default }
-footer { font-size: 12.5px; color: var(--muted); text-align: center; padding-block: 4px 16px }
+.actions { display: flex; gap: 8px; align-items: center }
+.ghost.icon { display: grid; place-items: center; width: 34px; height: 34px; padding: 0 }
+.info {
+  max-width: min(420px, calc(100vw - 32px)); border: 3px solid var(--ink); border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--ink); background: var(--panel); color: var(--ink); padding: 18px 20px;
+}
+.info::backdrop { background: rgba(0, 0, 0, .45) }
+.info h2 { font-family: var(--display), Impact, sans-serif; font-weight: 400; letter-spacing: 1px; font-size: 26px; margin: 0 0 8px }
+.info p { margin: 0 0 10px }
+.info form { display: flex; justify-content: flex-end }
 
 /* ---------- Escabot ---------- */
 .bot { overflow: visible }
 .bot.hero { width: 150px; height: 200px }
-.bot.mini { width: 52px; height: 70px }
 .bot .rail-o { stroke: var(--ink); stroke-width: 17; stroke-linecap: round }
 .bot .rail { stroke-width: 11; stroke-linecap: round }
 .bot .rung-o { stroke: var(--ink); stroke-width: 13; stroke-linecap: round }
@@ -101,6 +128,11 @@ footer { font-size: 12.5px; color: var(--muted); text-align: center; padding-blo
 .bot .eye-w { fill: #fff; stroke: var(--ink); stroke-width: 3 }
 .bot .mouth { fill: none; stroke: var(--ink); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round }
 .bot .mouth.fill { fill: var(--ink) }
+.bot .frame-o { fill: none; stroke: var(--ink); stroke-width: 10; stroke-linecap: round; stroke-linejoin: round }
+.bot .frame { fill: none; stroke: #16181c; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round }
+.bot .frame-o .topbar { stroke-width: 13 }
+.bot .frame .topbar { stroke-width: 9 }
+.bot .glare { stroke: #fff; stroke-width: 2.5; stroke-linecap: round; opacity: .8 }
 .bot .brow { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; opacity: 0 }
 .bot .m, .bot .sweat, .bot .think { opacity: 0 }
 .bot .m { transition: opacity .15s }
@@ -129,7 +161,8 @@ footer { font-size: 12.5px; color: var(--muted); text-align: center; padding-blo
 [data-state="happy"] .eyes { transform: scaleY(.55) }
 
 [data-state="surprised"] .m-surprised { opacity: 1 }
-[data-state="surprised"] .eyes { animation: none; transform: scale(1.18) }
+[data-state="surprised"] .eyes { animation: none; transform: scale(1.1) }
+[data-state="surprised"] .glasses { transform: translateY(-4px) }
 [data-state="surprised"] .cap { animation: capPop 1.4s ease-out 2 }
 [data-state="surprised"] .body-g { animation: jolt 1.4s ease-out 2 }
 [data-state="surprised"] .brow-l, [data-state="surprised"] .brow-r { opacity: 1; transform: translateY(-5px) }
@@ -161,5 +194,5 @@ footer { font-size: 12.5px; color: var(--muted); text-align: center; padding-blo
 @keyframes slump { 50% { transform: scaleY(.96) rotate(-2deg) } }
 
 @media (prefers-reduced-motion: reduce) {
-  .bot, .bot * { animation: none !important; transition: none !important }
+  .bot, .bot *, .dock .shadow { animation: none !important; transition: none !important }
 }

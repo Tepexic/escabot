@@ -37,14 +37,26 @@ export function Escabot({ mood, className }: { mood: Mood; className?: string })
         <line className="brow brow-l" x1="76" y1="68" x2="94" y2="66" />
         <line className="brow brow-r" x1="106" y1="66" x2="124" y2="68" />
         <g className="eyes">
-          <ellipse className="eye-w" cx="86" cy="90" rx="12" ry="14" />
-          <ellipse className="eye-w" cx="114" cy="90" rx="12" ry="14" />
+          <ellipse className="eye-w" cx="84" cy="90" rx="11" ry="12" />
+          <ellipse className="eye-w" cx="116" cy="90" rx="11" ry="12" />
           <g className="pupils">
-            <circle fill="#16181c" cx="88" cy="92" r="5.5" />
-            <circle fill="#16181c" cx="112" cy="92" r="5.5" />
-            <circle cx="90" cy="89.5" r="1.8" fill="#fff" />
-            <circle cx="114" cy="89.5" r="1.8" fill="#fff" />
+            <circle fill="#16181c" cx="86" cy="92" r="5.5" />
+            <circle fill="#16181c" cx="114" cy="92" r="5.5" />
+            <circle cx="88" cy="89.5" r="1.8" fill="#fff" />
+            <circle cx="116" cy="89.5" r="1.8" fill="#fff" />
           </g>
+        </g>
+        {/* Thick glasses, a nod to Alex. Outside .eyes so they don't blink. */}
+        {/* Wayfarer-style: trapezoid lenses, heavy top bar. */}
+        <g className="glasses">
+          {['frame-o', 'frame'].map((c) => (
+            <g key={c} className={c}>
+              <path d="M67 77 L98 77 L95 98 Q94 103 88 103 L76 103 Q71 103 70 98 Z" />
+              <path d="M133 77 L102 77 L105 98 Q106 103 112 103 L124 103 Q129 103 130 98 Z" />
+              <path className="topbar" d="M66 77 H99 M101 77 H134 M98 81 H102" />
+            </g>
+          ))}
+          <path className="glare" d="M88 81 l4 5 M120 81 l4 5" />
         </g>
         <path className="m mouth m-neutral" d="M90 116 Q100 123 110 116" />
         <path className="m mouth m-thinking" d="M92 119 L108 116" />
