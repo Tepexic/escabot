@@ -16,6 +16,17 @@ export const schemaText = MAIN.map((name) => {
   return `- ${name}(${cols.join(', ')})`;
 }).join('\n');
 
+// A fact built straight from one row, so it can't be wrong and costs no tokens.
+export function randomFact(): string {
+  const r = db
+    .prepare(
+      `SELECT driver, team, year, COUNT(*) AS wins FROM race_results WHERE position = 1
+       GROUP BY driver_ref, team, year HAVING wins >= 3 ORDER BY random() LIMIT 1`,
+    )
+    .get() as { driver: string; team: string; year: number; wins: number };
+  return `${r.driver} ganó ${r.wins} carreras en ${r.year} con ${r.team}.`;
+}
+
 export type SqlResult = { rows: Record<string, unknown>[]; truncated: boolean } | { error: string };
 
 // shortcut: no query timeout (node:sqlite has no progress handler); a runaway join is

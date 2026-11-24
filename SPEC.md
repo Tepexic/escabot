@@ -55,7 +55,13 @@ Avatar mockup: [`docs/escabot-mockup.html`](docs/escabot-mockup.html).
 
 ## Abuse & cost
 
-- Rate limit: 20 messages / IP / hour, plus 200 messages / day for the whole site (Upstash Redis free tier, `lib/ratelimit.ts`). Production refuses all requests if Redis isn't configured.
+Public site, no signup, $5 prepaid. Checks in `app/api/chat/route.ts`, cheapest first; every LLM call comes after all of them:
+1. **Input sanitizing:** only user/assistant text from the client's history (forged `system` messages and tool results are dropped), last 6 messages, old answers trimmed to 1500 chars, user messages max 1000 chars (413).
+2. **Vercel BotID** (Basic, free on Hobby): `instrumentation-client.ts` + `checkBotId()`; 403 for bots.
+3. **Per IP:** 20 messages/hour (`lib/ratelimit.ts`, Upstash). IP from `x-real-ip`.
+4. **Daily token budget + kill switch** (`lib/budget.ts`): 1M tokens/day site-wide (~$0.35, ~70–100 questions), counted from real usage. Setting the `escabot:off` key in Upstash stops everything. Over budget or off → 503.
+5. **Off-topic gate** (`lib/gate.ts`): a ~300-token classifier call (F1 / OTRO, leans F1 when unsure, treats "ignore your instructions" as OTRO). OTRO → canned refusal + an Alex fact from one random DB row; no agent call.
+- Without Redis: everything open in dev, everything refused in production.
 - `maxOutputTokens: 1500` per step.
 - Gemini free tier tested 2026-11-19 and rejected: 5 requests/minute per model, about 1–2 questions/minute for the whole site.
 - DeepSeek: prepaid credit only, no auto-recharge.

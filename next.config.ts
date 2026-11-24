@@ -1,3 +1,4 @@
+import { withBotId } from 'botid/next/config';
 import type { NextConfig } from 'next';
 
 const config: NextConfig = {
@@ -5,4 +6,5 @@ const config: NextConfig = {
   outputFileTracingIncludes: { '/api/chat': ['./data/f1.db', './docs/persona.md'] },
 };
 
-export default config;
+// Adds the rewrites BotID's invisible challenge needs.
+export default withBotId(config);

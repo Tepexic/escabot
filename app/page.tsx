@@ -95,6 +95,14 @@ export default function Chat() {
   const lastText = last?.role === 'assistant' ? fromMoodTag(textOf(last)) : '';
   // Escabot's mood follows the latest exchange.
   const mood: Mood = error ? 'error' : busy && !lastText ? 'thinking' : moodOf(lastText);
+  // He reacts to an answer for a few seconds, then rests; thinking and error hold until they change.
+  const [resting, setResting] = useState(false);
+  useEffect(() => {
+    setResting(false);
+    if (mood === 'thinking' || mood === 'error') return;
+    const t = setTimeout(() => setResting(true), 4000);
+    return () => clearTimeout(t);
+  }, [mood, last?.id]);
 
   return (
     <div className="app">
@@ -108,8 +116,8 @@ export default function Chat() {
             </svg>
           </button>
           {messages.length > 0 && (
-            <button type="button" className="ghost" onClick={reset}>
-              Nueva conversación
+            <button type="button" className="ghost" aria-label="Nueva conversación" onClick={reset}>
+              + Chat
             </button>
           )}
         </div>
@@ -129,6 +137,10 @@ export default function Chat() {
         <p>
           Datos: <a href="https://github.com/jolpica/jolpica-f1" target="_blank" rel="noreferrer">Jolpica-F1</a>{' '}
           (CC BY-NC-SA 4.0), temporadas 1950 a 2025.
+        </p>
+        <p>
+          Hecho por{' '}
+          <a href="https://www.instagram.com/tepexic" target="_blank" rel="noreferrer">@tepexic</a>.
         </p>
         <form method="dialog">
           <button className="ghost">Cerrar</button>
@@ -211,7 +223,7 @@ export default function Chat() {
         {/* Docked above the input; the chat scrolls behind him through a frosted patch. */}
         {messages.length > 0 && (
           <div className="dock" aria-hidden="true">
-            <Escabot mood={mood} />
+            <Escabot mood={resting ? 'neutral' : mood} />
             <div className="shadow" />
           </div>
         )}

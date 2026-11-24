@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Escabot's head, simplified to read at 16px: aluminum top, Wayfarer glasses, red cap. -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#ffd400"/>
+  <path d="M20 58 L24 30 M44 58 L40 30" stroke="#16181c" stroke-width="7" stroke-linecap="round"/>
+  <path d="M20 58 L24 30 M44 58 L40 30" stroke="#c9d0d8" stroke-width="3.5" stroke-linecap="round"/>
+  <path d="M21 48 H43" stroke="#16181c" stroke-width="5" stroke-linecap="round"/>
+  <rect x="15" y="27" width="34" height="13" rx="3" fill="#16181c"/>
+  <path d="M18 29 H30 L29 37 H19 Z M46 29 H34 L35 37 H45 Z" fill="#fff"/>
+  <circle cx="25" cy="33.5" r="2.6" fill="#16181c"/><circle cx="39" cy="33.5" r="2.6" fill="#16181c"/>
+  <path d="M12 25 Q13 8 32 7 Q51 8 52 25 Z" fill="#d40000" stroke="#16181c" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M48 22 Q58 20 62 25 Q55 27 47 26 Z" fill="#d40000" stroke="#16181c" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>
